@@ -1,12 +1,34 @@
 ---
 
-sudo snap install microk8s --classic --channel=1.28
+Let's do a clean MicroK8s Kubeflow installation on your local laptop. This is much simpler than the Terraform/Juju approach:
+
+Step 1: Install MicroK8s
+bash
+# Install MicroK8s
+sudo snap install microk8s --classic
+
+# Add your user to the microk8s group
+sudo usermod -a -G microk8s $USER
+sudo chown -f -R $USER ~/.kube
+
+# Apply group changes without logout
+newgrp microk8s
+Step 2: Start and Configure MicroK8s
+bash
+# Wait for MicroK8s to be ready
+microk8s status --wait-ready
+
+# Enable essential addons
+microk8s enable dns storage metallb ingress
+
+# Verify addons are enabled
 
 --
 
-sudo microk8s status --wait-ready
+microk8s status
 
 --
+
 sudo microk8s enable dns
 
 --
@@ -44,3 +66,17 @@ sudo microk8s start
 
 # Reset if needed
 sudo microk8s reset
+
+--
+
+Verify Installation
+bash
+# Check all Kubeflow components
+microk8s kubectl get pods -n kubeflow
+
+# Check services
+microk8s kubectl get svc -n kubeflow
+
+# Check storage
+microk8s kubectl get pvc -n kubeflow
+
