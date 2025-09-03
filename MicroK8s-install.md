@@ -14,6 +14,8 @@ sudo usermod -a -G microk8s $USER
 sudo chown -f -R $USER ~/.kube
 
 # Apply group changes without logout
+
+-
 newgrp microk8s
 Step 2: Start and Configure MicroK8s
 bash
