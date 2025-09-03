@@ -9,6 +9,8 @@ sudo snap install microk8s --classic
 
 # Add your user to the microk8s group
 sudo usermod -a -G microk8s $USER
+
+-
 sudo chown -f -R $USER ~/.kube
 
 # Apply group changes without logout
