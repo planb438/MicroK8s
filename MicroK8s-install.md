@@ -17,6 +17,8 @@ sudo chown -f -R $USER ~/.kube
 
 -
 newgrp microk8s
+
+-
 Step 2: Start and Configure MicroK8s
 bash
 # Wait for MicroK8s to be ready
