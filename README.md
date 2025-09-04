@@ -1,71 +1,79 @@
-You need to assign roles to your nodes to make this a proper cluster. Here's how to fix it:
+MicroK8s Cluster Setup Guide
+Overview
+This guide explains how to properly configure a MicroK8s Kubernetes cluster with dedicated control plane and worker nodes.
 
-1. Remove the current nodes from the cluster (optional but clean)
-First, drain and remove the worker nodes:
+Current Node Status
+text
+NAME      STATUS   ROLES    AGE     VERSION
+cp        Ready    <none>   51m     v1.32.3
+worker1   Ready    <none>   3m43s   v1.32.3
+worker2   Ready    <none>   24s     v1.32.3
+Step-by-Step Configuration
+1. Set Up Control Plane Node
+SSH into your control plane node (cp) and execute:
 
 bash
-microk8s kubectl drain worker1 --ignore-daemonsets --delete-emptydir-data
-microk8s kubectl drain worker2 --ignore-daemonsets --delete-emptydir-data
-microk8s kubectl delete node worker1 worker2
-2. Set up the control plane node
-On the cp node, run:
-
-bash
+# Label the control plane node
 microk8s kubectl label node cp node-role.kubernetes.io/control-plane=
+
+# Taint the control plane to prevent user workloads
 microk8s kubectl taint node cp node-role.kubernetes.io/control-plane:NoSchedule
-3. Join the worker nodes properly
-Get the join command from the control plane node:
+2. Generate Join Command
+On the control plane node, generate join tokens for worker nodes:
 
 bash
 microk8s add-node
-This will give you a command like:
+This will output a join command like:
 
 text
 microk8s join 192.168.1.100:25000/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Run this command on both worker1 and worker2.
+3. Join Worker Nodes
+SSH into each worker node and run the join command from step 2:
 
-4. Label the worker nodes
-After joining, label the worker nodes:
+On worker1 and worker2:
+
+bash
+microk8s join <IP:PORT/TOKEN> # Use the actual command from above
+4. Label Worker Nodes
+Back on the control plane node, label the worker nodes:
 
 bash
 microk8s kubectl label node worker1 node-role.kubernetes.io/worker=
 microk8s kubectl label node worker2 node-role.kubernetes.io/worker=
-5. Verify the setup
+5. Verify Cluster Configuration
+Check your node roles and status:
+
 bash
 microk8s kubectl get nodes -o wide
-You should now see proper roles assigned:
+Expected output:
 
 text
 NAME      STATUS   ROLES            AGE     VERSION
 cp        Ready    control-plane    51m     v1.32.3
 worker1   Ready    worker           3m43s   v1.32.3
 worker2   Ready    worker           24s     v1.32.3
-6. Optional: Enable necessary MicroK8s addons
+6. Enable Essential Addons
+On the control plane node, enable necessary MicroK8s addons:
+
 bash
 microk8s enable dns storage dashboard
-7. Configure pod placement
-Create tolerations and node selectors in your deployments to ensure:
-
-Control plane pods stay on control plane nodes
-
-Application pods go to worker nodes
-
-Example deployment for worker nodes:
+Deployment Configuration Example
+To ensure pods are scheduled correctly, use node selectors and tolerations:
 
 yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: example-app
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: my-app
+      app: example-app
   template:
     metadata:
       labels:
-        app: my-app
+        app: example-app
     spec:
       nodeSelector:
         node-role.kubernetes.io/worker: ""
@@ -74,6 +82,44 @@ spec:
         operator: Exists
         effect: NoSchedule
       containers:
-      - name: my-app
-        image: nginx
-This setup will ensure that critical control plane components stay on the control plane node while application workloads are scheduled on the worker nodes.
+      - name: app
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+Maintenance Commands
+Check Cluster Status
+bash
+microk8s status
+View All Pods
+bash
+microk8s kubectl get pods -A -o wide
+Drain a Node (for maintenance)
+bash
+microk8s kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+Uncordon a Node
+bash
+microk8s kubectl uncordon <node-name>
+Troubleshooting
+Common Issues
+Nodes not joining: Ensure firewall allows traffic on port 25000
+
+Pods pending: Check node resources and taints
+
+DNS not working: Verify the dns addon is enabled
+
+Check Node Details
+bash
+microk8s kubectl describe node <node-name>
+Check Cluster Events
+bash
+microk8s kubectl get events -A
+Notes
+The control plane node will now only run system pods and critical services
+
+Worker nodes will handle application workloads
+
+Always cordon/drain nodes before maintenance
+
+Regularly update MicroK8s with microk8s refresh
+
+This configuration provides a proper Kubernetes cluster architecture with separated control plane and worker roles.
