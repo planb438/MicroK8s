@@ -3,7 +3,7 @@ Overview
 This guide explains how to properly configure a MicroK8s Kubernetes cluster with dedicated control plane and worker nodes.
 
 Current Node Status
-text
+bash
 NAME      STATUS   ROLES    AGE     VERSION
 cp        Ready    <none>   51m     v1.32.3
 worker1   Ready    <none>   3m43s   v1.32.3
