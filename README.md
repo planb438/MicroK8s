@@ -12,7 +12,8 @@ Step-by-Step Configuration
 1. Set Up Control Plane Node
 SSH into your control plane node (cp) and execute:
 
-bash
+bash 
+
 # Label the control plane node
 microk8s kubectl label node cp node-role.kubernetes.io/control-plane=
 
@@ -22,10 +23,12 @@ microk8s kubectl taint node cp node-role.kubernetes.io/control-plane:NoSchedule
 On the control plane node, generate join tokens for worker nodes:
 
 bash
+
 microk8s add-node
 This will output a join command like:
 
 text
+
 microk8s join 192.168.1.100:25000/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 3. Join Worker Nodes
 SSH into each worker node and run the join command from step 2:
@@ -33,17 +36,20 @@ SSH into each worker node and run the join command from step 2:
 On worker1 and worker2:
 
 bash
+
 microk8s join <IP:PORT/TOKEN> # Use the actual command from above
 4. Label Worker Nodes
 Back on the control plane node, label the worker nodes:
 
 bash
+
 microk8s kubectl label node worker1 node-role.kubernetes.io/worker=
 microk8s kubectl label node worker2 node-role.kubernetes.io/worker=
 5. Verify Cluster Configuration
 Check your node roles and status:
 
 bash
+
 microk8s kubectl get nodes -o wide
 Expected output:
 
@@ -56,11 +62,13 @@ worker2   Ready    worker           24s     v1.32.3
 On the control plane node, enable necessary MicroK8s addons:
 
 bash
+
 microk8s enable dns storage dashboard
 Deployment Configuration Example
 To ensure pods are scheduled correctly, use node selectors and tolerations:
 
 yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -89,15 +97,19 @@ spec:
 Maintenance Commands
 Check Cluster Status
 bash
+
 microk8s status
 View All Pods
 bash
+
 microk8s kubectl get pods -A -o wide
 Drain a Node (for maintenance)
 bash
+
 microk8s kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
 Uncordon a Node
 bash
+
 microk8s kubectl uncordon <node-name>
 Troubleshooting
 Common Issues
@@ -109,9 +121,11 @@ DNS not working: Verify the dns addon is enabled
 
 Check Node Details
 bash
+
 microk8s kubectl describe node <node-name>
 Check Cluster Events
 bash
+
 microk8s kubectl get events -A
 Notes
 The control plane node will now only run system pods and critical services
