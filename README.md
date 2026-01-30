@@ -1,6 +1,11 @@
 MicroK8s Cluster Setup Guide
+---
+
+
 Overview
 This guide explains how to properly configure a MicroK8s Kubernetes cluster with dedicated control plane and worker nodes.
+
+---
 
 Current Node Status
 bash
@@ -8,7 +13,13 @@ NAME      STATUS   ROLES    AGE     VERSION
 cp        Ready    <none>   51m     v1.32.3
 worker1   Ready    <none>   3m43s   v1.32.3
 worker2   Ready    <none>   24s     v1.32.3
+
+
+
 Step-by-Step Configuration
+
+
+
 1. Set Up Control Plane Node
 SSH into your control plane node (cp) and execute:
 
@@ -16,6 +27,8 @@ bash
 
 # Label the control plane node
 microk8s kubectl label node cp node-role.kubernetes.io/control-plane=
+
+
 
 # Taint the control plane to prevent user workloads
 microk8s kubectl taint node cp node-role.kubernetes.io/control-plane:NoSchedule
@@ -127,6 +140,9 @@ Check Cluster Events
 bash
 
 microk8s kubectl get events -A
+
+--
+
 Notes
 The control plane node will now only run system pods and critical services
 
