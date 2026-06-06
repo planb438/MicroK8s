@@ -15,10 +15,12 @@ worker1   Ready    <none>   3m43s   v1.32.3
 worker2   Ready    <none>   24s     v1.32.3
 
 
+---
 
 Step-by-Step Configuration
 
 
+---
 
 1. Set Up Control Plane Node
 SSH into your control plane node (cp) and execute:
@@ -32,6 +34,9 @@ microk8s kubectl label node cp node-role.kubernetes.io/control-plane=
 
 # Taint the control plane to prevent user workloads
 microk8s kubectl taint node cp node-role.kubernetes.io/control-plane:NoSchedule
+
+---
+
 2. Generate Join Command
 On the control plane node, generate join tokens for worker nodes:
 
@@ -43,6 +48,9 @@ This will output a join command like:
 text
 
 microk8s join 192.168.1.100:25000/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+---
+
 3. Join Worker Nodes
 SSH into each worker node and run the join command from step 2:
 
@@ -51,6 +59,9 @@ On worker1 and worker2:
 bash
 
 microk8s join <IP:PORT/TOKEN> # Use the actual command from above
+
+---
+
 4. Label Worker Nodes
 Back on the control plane node, label the worker nodes:
 
@@ -58,6 +69,9 @@ bash
 
 microk8s kubectl label node worker1 node-role.kubernetes.io/worker=
 microk8s kubectl label node worker2 node-role.kubernetes.io/worker=
+
+---
+
 5. Verify Cluster Configuration
 Check your node roles and status:
 
@@ -71,6 +85,9 @@ NAME      STATUS   ROLES            AGE     VERSION
 cp        Ready    control-plane    51m     v1.32.3
 worker1   Ready    worker           3m43s   v1.32.3
 worker2   Ready    worker           24s     v1.32.3
+
+---
+
 6. Enable Essential Addons
 On the control plane node, enable necessary MicroK8s addons:
 
@@ -107,6 +124,9 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+
+---
+
 Maintenance Commands
 Check Cluster Status
 bash
@@ -141,7 +161,8 @@ bash
 
 microk8s kubectl get events -A
 
---
+---
+
 
 Notes
 The control plane node will now only run system pods and critical services
